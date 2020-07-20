@@ -5,7 +5,8 @@ export default {
         Logs: 'Logs',
         Rules: 'Rules',
         Settings: 'Setting',
-        Connections: 'Connections'
+        Connections: 'Connections',
+        Version: 'Version'
     },
     Settings: {
         title: 'Settings',
@@ -40,7 +41,10 @@ export default {
         title: 'Logs'
     },
     Rules: {
-        title: 'Rules'
+        title: 'Rules',
+        providerTitle: 'Providers',
+        providerUpdateTime: 'Last updated at',
+        ruleCount: 'Rule count'
     },
     Connections: {
         title: 'Connections',
@@ -90,5 +94,9 @@ export default {
         collapseText: 'Collapse',
         speedTestText: 'Speed Test',
         breakConnectionsText: 'Close connections which include the group'
+    },
+    Modal: {
+        ok: 'Ok',
+        cancel: 'Cancel'
     }
 }

@@ -2,12 +2,13 @@ import React, { useMemo, useLayoutEffect } from 'react'
 import { useBlockLayout, useResizeColumns, useTable } from 'react-table'
 import classnames from 'classnames'
 import { Header, Card, Checkbox, Modal, Icon } from '@components'
-import { containers } from '@stores'
+import { useI18n } from '@stores'
 import * as API from '@lib/request'
 import { StreamReader } from '@lib/streamer'
 import { useObject, useVisible } from '@lib/hook'
 import { noop } from '@lib/helper'
 import { fromNow } from '@lib/date'
+import { RuleType } from '@models'
 import { useConnections } from './store'
 import './style.scss'
 
@@ -62,7 +63,7 @@ function formatSpeed (upload: number, download: number) {
 }
 
 export default function Connections () {
-    const { useTranslation, lang } = containers.useI18n()
+    const { useTranslation, lang } = useI18n()
     const t = useMemo(() => useTranslation('Connections').t, [useTranslation])
 
     // total
@@ -111,7 +112,7 @@ export default function Connections () {
                 id: c.id,
                 host: `${c.metadata.host || c.metadata.destinationIP}:${c.metadata.destinationPort}`,
                 chains: c.chains.slice().reverse().join(' --> '),
-                rule: c.rule,
+                rule: c.rule === RuleType.RuleSet ? `${c.rule}(${c.rulePayload})` : c.rule,
                 time: fromNow(new Date(c.start), lang),
                 upload: formatTraffic(c.upload),
                 download: formatTraffic(c.download),
@@ -154,7 +155,7 @@ export default function Connections () {
             }
         }
 
-        ;(async function () {
+        (async function () {
             const streamReader = await API.getConnectionStreamReader()
             streamReader.subscribe('data', handleConnection)
         }())

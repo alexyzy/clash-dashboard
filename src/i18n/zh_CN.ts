@@ -5,7 +5,8 @@ export default {
         Logs: '日志',
         Rules: '规则',
         Settings: '设置',
-        Connections: '连接'
+        Connections: '连接',
+        Version: '版本'
     },
     Settings: {
         title: '设置',
@@ -40,7 +41,10 @@ export default {
         title: '日志'
     },
     Rules: {
-        title: '规则'
+        title: '规则',
+        providerTitle: '规则集',
+        providerUpdateTime: '最后更新于',
+        ruleCount: '规则条数'
     },
     Connections: {
         title: '连接',
@@ -90,5 +94,9 @@ export default {
         collapseText: '收起',
         speedTestText: '测速',
         breakConnectionsText: '切换时打断包含策略组的连接'
+    },
+    Modal: {
+        ok: '确 定',
+        cancel: '取 消'
     }
 }
