@@ -52,7 +52,7 @@ declare global {
 
 }
 
-type JsBridgeCallback = (jsbridge: JsBridgeAPI) => void
+type JsBridgeCallback = (jsbridge: JsBridgeAPI | null) => void
 
 /**
  * Check if perched in ClashX Runtime
@@ -64,24 +64,23 @@ export function isClashX () {
 /**
  * Closure save jsbridge instance
  */
-export let jsBridge: JsBridge = null
+export let jsBridge: JsBridge | null = null
 
 /**
  * JsBridge class
  */
 export class JsBridge {
-    instance: JsBridgeAPI = null
+    instance: JsBridgeAPI | null = null
 
-    constructor (callback: JsBridgeCallback) {
+    constructor (callback: () => void) {
         if (window.WebViewJavascriptBridge) {
             this.instance = window.WebViewJavascriptBridge
-            callback(this.instance)
         }
 
         // init jsbridge
         this.initBridge(jsBridge => {
             this.instance = jsBridge
-            callback(jsBridge)
+            callback()
         })
     }
 
@@ -95,7 +94,7 @@ export class JsBridge {
          * You need check if inClashX first
          */
         if (!isClashX()) {
-            return callback(null)
+            return callback?.(null)
         }
 
         if (window.WebViewJavascriptBridge) {
@@ -118,7 +117,7 @@ export class JsBridge {
 
     public callHandler<T> (handleName: string, data?: any) {
         return new Promise<T>((resolve) => {
-            this.instance.callHandler(
+            this.instance?.callHandler(
                 handleName,
                 data,
                 resolve
@@ -171,9 +170,10 @@ export class JsBridge {
     }
 }
 
-export function setupJsBridge (callback) {
+export function setupJsBridge (callback: () => void) {
     if (jsBridge) {
-        return callback(jsBridge)
+        callback()
+        return
     }
 
     jsBridge = new JsBridge(callback)

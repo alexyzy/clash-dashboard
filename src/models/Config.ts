@@ -67,7 +67,7 @@ export interface Config {
 export interface Data {
     version?: string
 
-    general?: {
+    general: {
 
         /**
          * http proxy port
@@ -80,6 +80,11 @@ export interface Data {
         socksPort?: number
 
         /**
+         * mixed porxy port
+         */
+        mixedPort?: number
+
+        /**
          * redir proxy port
          */
         redirPort?: number
@@ -87,12 +92,12 @@ export interface Data {
         /**
          * proxy is allow lan
          */
-        allowLan?: boolean
+        allowLan: boolean
 
         /**
          * clash proxy mode
          */
-        mode?: 'script' | 'rule' | 'direct' | 'global'
+        mode: 'script' | 'rule' | 'direct' | 'global'
 
         /**
          * clash tty log level

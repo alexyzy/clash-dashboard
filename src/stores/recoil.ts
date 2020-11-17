@@ -1,8 +1,8 @@
 import { atom, useRecoilState, selector } from 'recoil'
 import get from 'lodash/get'
-import throttle from 'lodash/throttle'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { AxiosError } from 'axios'
+import swr from 'swr'
 
 import { getLanguage, setLanguage, Lang, locales, Language } from '@i18n'
 import { useRecoilObjectWithImmer } from '@lib/recoil'
@@ -50,8 +50,8 @@ export function useI18n () {
         setLanguage(lang)
     }
 
-    const useTranslation = useCallback(
-        function (namespace: string) {
+    const translation = useCallback(
+        function (namespace: keyof typeof Language['en_US']) {
             function t (path: string) {
                 return get(Language[lang][namespace], path) as string
             }
@@ -60,7 +60,7 @@ export function useI18n () {
         [lang]
     )
 
-    return { lang, locales, setLang, useTranslation }
+    return { lang, locales, setLang, translation }
 }
 
 export const version = atom({
@@ -108,69 +108,54 @@ export const proxyProvider = atom({
 })
 
 export function useProxyProviders () {
-    const [data, set] = useRecoilState(proxyProvider)
+    const [providers, set] = useRecoilState(proxyProvider)
 
-    async function update () {
+    const { data, mutate } = swr('/providers/proxy', async () => {
         const proxyProviders = await API.getProxyProviders()
 
-        const providers = Object.keys(proxyProviders.data.providers)
+        return Object.keys(proxyProviders.data.providers)
             .map<API.Provider>(name => proxyProviders.data.providers[name])
             .filter(pd => pd.name !== 'default')
             .filter(pd => pd.vehicleType !== 'Compatible')
+    })
 
-        set(providers)
-    }
-
-    return { providers: data, update }
+    useEffect(() => set(data ?? []), [data, set])
+    return { providers, update: mutate }
 }
 
-export const ruleProvider = atom({
-    key: 'ruleProvider',
-    default: [] as API.RuleProvider[]
-})
-
 export function useRuleProviders () {
-    const [data, set] = useRecoilState(ruleProvider)
     const [{ premium }] = useRecoilState(version)
 
-    async function update () {
+    const { data, mutate } = swr('/providers/rule', async () => {
         if (!premium) {
-            return
+            return []
         }
 
         const ruleProviders = await API.getRuleProviders()
 
-        const providers = Object.keys(ruleProviders.data.providers)
+        return Object.keys(ruleProviders.data.providers)
             .map<API.RuleProvider>(name => ruleProviders.data.providers[name])
+    })
 
-        set(providers)
-    }
-
-    return { providers: data, update }
+    return { providers: data ?? [], update: mutate }
 }
 
-export const general = atom({
-    key: 'general',
-    default: {} as Models.Data['general']
-})
-
 export function useGeneral () {
-    const [data, set] = useRecoilState(general)
-
-    async function update () {
+    const { data, mutate } = swr('/config', async () => {
         const resp = await API.getConfig()
         const data = resp.data
-        set({
+        return {
             port: data.port,
             socksPort: data['socks-port'],
+            mixedPort: data['mixed-port'] ?? 0,
             redirPort: data['redir-port'],
             mode: data.mode.toLowerCase() as Models.Data['general']['mode'],
             logLevel: data['log-level'],
             allowLan: data['allow-lan']
-        })
-    }
+        } as Models.Data['general']
+    })
 
-    return { general: data, update: throttle(update, 50) }
+    return { general: data ?? {} as Models.Data['general'], update: mutate }
 }
 
 export const proxies = atom({
@@ -178,14 +163,20 @@ export const proxies = atom({
     default: {
         proxies: [] as API.Proxy[],
         groups: [] as API.Group[],
-        global: {} as API.Group
+        global: {
+            name: 'GLOBAL',
+            type: 'Selector',
+            now: '',
+            history: [],
+            all: []
+        } as API.Group
     }
 })
 
 export function useProxy () {
-    const [data, set] = useRecoilObjectWithImmer(proxies)
+    const [allProxy, set] = useRecoilObjectWithImmer(proxies)
 
-    async function update () {
+    const { mutate } = swr('/proxies', async () => {
         const allProxies = await API.getProxies()
 
         const global = allProxies.data.proxies.GLOBAL as API.Group
@@ -198,15 +189,25 @@ export function useProxy () {
             .filter(key => !unUsedProxy.has(key))
             .map(key => ({ ...allProxies.data.proxies[key], name: key }))
         const [proxy, groups] = partition(proxies, proxy => !policyGroup.has(proxy.type))
-
         set({ proxies: proxy as API.Proxy[], groups: groups as API.Group[], global: global })
-    }
+    })
+
+    const markProxySelected = useCallback((name: string, selected: string) => {
+        set(draft => {
+            for (const group of draft.groups) {
+                if (group.name === name) {
+                    group.now = selected
+                }
+            }
+        })
+    }, [set])
 
     return {
-        proxies: data.proxies,
-        groups: data.groups,
-        global: data.global,
-        update,
+        proxies: allProxy.proxies,
+        groups: allProxy.groups,
+        global: allProxy.global,
+        update: mutate,
+        markProxySelected,
         set
     }
 }
@@ -231,30 +232,23 @@ export const proxyMapping = selector({
     }
 })
 
-export const clashxData = atom({
-    key: 'clashxData',
-    default: {
-        isClashX: false,
-        startAtLogin: false,
-        systemProxy: false
-    }
-})
-
 export function useClashXData () {
-    const [data, set] = useRecoilState(clashxData)
-
-    async function update () {
+    const { data, mutate } = swr('/clashx', async () => {
         if (!isClashX()) {
-            return
+            return {
+                isClashX: false,
+                startAtLogin: false,
+                systemProxy: false
+            }
         }
 
-        const startAtLogin = await jsBridge.getStartAtLogin()
-        const systemProxy = await jsBridge.isSystemProxySet()
+        const startAtLogin = await jsBridge?.getStartAtLogin() ?? false
+        const systemProxy = await jsBridge?.isSystemProxySet() ?? false
 
-        set({ startAtLogin, systemProxy, isClashX: true })
-    }
+        return { startAtLogin, systemProxy, isClashX: true }
+    })
 
-    return { data, update }
+    return { data, update: mutate }
 }
 
 export const apiData = atom({
@@ -269,10 +263,10 @@ export const apiData = atom({
 export function useAPIInfo () {
     const [data, set] = useRecoilState(apiData)
 
-    async function fetch () {
+    const fetch = useCallback(async function fetch () {
         const info = await API.getExternalControllerConfig()
         set({ ...info })
-    }
+    }, [set])
 
     async function update (info: typeof data) {
         const { hostname, port, secret } = info

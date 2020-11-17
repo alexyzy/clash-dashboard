@@ -48,18 +48,19 @@ export function Modal (props: ModalProps) {
         children
     } = props
 
-    const { useTranslation } = useI18n()
-    const { t } = useTranslation('Modal')
+    const { translation } = useI18n()
+    const { t } = translation('Modal')
 
     const portalRef = useRef<HTMLDivElement>(document.createElement('div'))
-    const maskRef = useRef<HTMLDivElement>()
+    const maskRef = useRef<HTMLDivElement>(null)
 
     useLayoutEffect(() => {
-        document.body.appendChild(portalRef.current)
-        return () => document.body.removeChild(portalRef.current)
+        const current = portalRef.current
+        document.body.appendChild(current)
+        return () => { document.body.removeChild(current) }
     }, [])
 
-    function handleMaskClick (e: MouseEvent) {
+    function handleMaskMouseDown (e: MouseEvent) {
         if (e.target === maskRef.current) {
             onClose()
         }
@@ -69,7 +70,7 @@ export function Modal (props: ModalProps) {
         <div
             className={classnames('modal-mask', { 'modal-show': show })}
             ref={maskRef}
-            onClick={handleMaskClick}
+            onMouseDown={handleMaskMouseDown}
         >
             <div
                 className={classnames('modal', `modal-${size}`, className)}

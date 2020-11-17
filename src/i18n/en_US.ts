@@ -1,4 +1,4 @@
-export default {
+const EN = {
     SideBar: {
         Proxies: 'Proxies',
         Overview: 'Overview',
@@ -18,6 +18,7 @@ export default {
             proxyMode: 'Mode',
             socks5ProxyPort: 'Socks5 proxy port',
             httpProxyPort: 'HTTP proxy port',
+            mixedProxyPort: 'Mixed proxy port',
             externalController: 'External controller'
         },
         values: {
@@ -25,7 +26,8 @@ export default {
             en: 'English',
             global: 'Global',
             rules: 'Rules',
-            direct: 'Direct'
+            direct: 'Direct',
+            script: 'Script'
         },
         versionString: 'Current ClashX is the latest version：{{version}}',
         checkUpdate: 'Check Update',
@@ -58,6 +60,9 @@ export default {
             title: 'Warning',
             content: 'This would close all connections'
         },
+        filter: {
+            all: 'All'
+        },
         columns: {
             host: 'Host',
             network: 'Network',
@@ -67,7 +72,8 @@ export default {
             time: 'Time',
             speed: 'Speed',
             upload: 'Upload',
-            download: 'Download'
+            download: 'Download',
+            sourceIP: 'Source IP'
         }
     },
     Proxies: {
@@ -100,3 +106,5 @@ export default {
         cancel: 'Cancel'
     }
 }
+
+export default EN

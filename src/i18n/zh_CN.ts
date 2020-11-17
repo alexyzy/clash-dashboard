@@ -1,4 +1,4 @@
-export default {
+const CN = {
     SideBar: {
         Proxies: '代理',
         Overview: '总览',
@@ -18,6 +18,7 @@ export default {
             proxyMode: '代理模式',
             socks5ProxyPort: 'Socks5 代理端口',
             httpProxyPort: 'HTTP 代理端口',
+            mixedProxyPort: '混合代理端口',
             externalController: '外部控制设置'
         },
         values: {
@@ -25,7 +26,8 @@ export default {
             en: 'English',
             global: '全局',
             rules: '规则',
-            direct: '直连'
+            direct: '直连',
+            script: '脚本'
         },
         versionString: '当前 ClashX 已是最新版本：{{version}}',
         checkUpdate: '检查更新',
@@ -58,6 +60,9 @@ export default {
             title: '警告',
             content: '将会关闭所有连接'
         },
+        filter: {
+            all: '全部'
+        },
         columns: {
             host: '域名',
             network: '网络',
@@ -67,7 +72,8 @@ export default {
             time: '连接时间',
             speed: '速率',
             upload: '上传',
-            download: '下载'
+            download: '下载',
+            sourceIP: '来源 IP'
         }
     },
     Proxies: {
@@ -100,3 +106,5 @@ export default {
         cancel: '取 消'
     }
 }
+
+export default CN

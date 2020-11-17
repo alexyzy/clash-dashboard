@@ -18,13 +18,12 @@ interface SidebarProps {
 
 export default function Sidebar (props: SidebarProps) {
     const { routes } = props
-    const { useTranslation } = useI18n()
+    const { translation } = useI18n()
     const { version, premium, update } = useVersion()
-    const { data: { isClashX }, update: updateClashXData } = useClashXData()
-    const { t } = useTranslation('SideBar')
+    const { data } = useClashXData()
+    const { t } = translation('SideBar')
 
     useSWR('version', update)
-    useSWR('clashx', updateClashXData)
 
     const navlinks = routes.map(
         ({ path, name, exact, noMobile }) => (
@@ -36,12 +35,12 @@ export default function Sidebar (props: SidebarProps) {
 
     return (
         <div className="sidebar">
-            <img src={logo} className="sidebar-logo" />
+            <img src={logo} alt="logo" className="sidebar-logo" />
             <ul className="sidebar-menu">
                 { navlinks }
             </ul>
             <div className="sidebar-version">
-                <span className="sidebar-version-label">Clash{ isClashX && 'X' } { t('Version') }</span>
+                <span className="sidebar-version-label">Clash{ data?.isClashX && 'X' } { t('Version') }</span>
                 <span className="sidebar-version-text">{ version }</span>
                 { premium && <span className="sidebar-version-label">Premium</span> }
             </div>

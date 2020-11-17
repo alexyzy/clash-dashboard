@@ -8,19 +8,21 @@ import { Log } from '@models/Log'
 import './style.scss'
 
 export default function Logs () {
-    const listRef = useRef<HTMLUListElement>()
+    const listRef = useRef<HTMLUListElement>(null)
     const logsRef = useRef<Log[]>([])
     const [logs, setLogs] = useState<Log[]>([])
-    const { useTranslation } = useI18n()
-    const { t } = useTranslation('Logs')
+    const { translation } = useI18n()
+    const { t } = translation('Logs')
 
     useLayoutEffect(() => {
         const ul = listRef.current
-        ul.scrollTop = ul.scrollHeight
-    }, [logsRef.current])
+        if (ul) {
+            ul.scrollTop = ul.scrollHeight
+        }
+    })
 
     useEffect(() => {
-        const streamReader: StreamReader<Log> = null
+        let streamReader: StreamReader<Log> | null = null
 
         function handleLog (newLogs: Log[]) {
             logsRef.current = logsRef.current.slice().concat(newLogs.map(d => ({ ...d, time: new Date() })))
@@ -28,13 +30,13 @@ export default function Logs () {
         }
 
         (async function () {
-            const streamReader = await getLogsStreamReader()
+            streamReader = await getLogsStreamReader()
             logsRef.current = streamReader.buffer()
             setLogs(logsRef.current)
             streamReader.subscribe('data', handleLog)
         }())
 
-        return () => streamReader && streamReader.unsubscribe('data', handleLog)
+        return () => streamReader?.unsubscribe('data', handleLog)
     }, [])
 
     return (

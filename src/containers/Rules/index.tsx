@@ -1,6 +1,6 @@
-import React, { useLayoutEffect } from 'react'
+import React from 'react'
 import { Header, Card, Row, Col } from '@components'
-import { useI18n, useRule, useRuleProviders, useVersion } from '@stores'
+import { useI18n, useRule, useRuleProviders } from '@stores'
 import { FixedSizeList as List } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import useSWR from 'swr'
@@ -8,16 +8,9 @@ import { Provider } from './Provider'
 import './style.scss'
 
 function RuleProviders () {
-    const { providers, update } = useRuleProviders()
-    const { premium } = useVersion()
-    const { useTranslation } = useI18n()
-    const { t } = useTranslation('Rules')
-
-    useLayoutEffect(() => {
-        if (premium) {
-            update()
-        }
-    }, [premium])
+    const { providers } = useRuleProviders()
+    const { translation } = useI18n()
+    const { t } = translation('Rules')
 
     return <>
         {
@@ -40,8 +33,8 @@ function RuleProviders () {
 
 export default function Rules () {
     const { rules, update } = useRule()
-    const { useTranslation } = useI18n()
-    const { t } = useTranslation('Rules')
+    const { translation } = useI18n()
+    const { t } = translation('Rules')
 
     useSWR('rules', update)
 

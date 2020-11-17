@@ -17,14 +17,14 @@ interface TagsProps extends BaseComponentProps {
 export function Tags (props: TagsProps) {
     const { className, data, onClick, select, canClick, errSet, rowHeight: rawHeight } = props
 
-    const { useTranslation } = useI18n()
-    const { t } = useTranslation('Proxies')
+    const { translation } = useI18n()
+    const { t } = translation('Proxies')
     const [expand, setExpand] = useState(false)
     const [showExtend, setShowExtend] = useState(false)
 
-    const ulRef = useRef<HTMLUListElement>()
+    const ulRef = useRef<HTMLUListElement>(null)
     useLayoutEffect(() => {
-        setShowExtend(ulRef.current.offsetHeight > 30)
+        setShowExtend((ulRef?.current?.offsetHeight ?? 0) > 30)
     }, [])
 
     const rowHeight = expand ? 'auto' : rawHeight
